@@ -1,69 +1,43 @@
-import os
-import fasttext
-import requests
+from haystack.schema import Document
 
-from tqdm import tqdm
+from haystack.nodes import FARMReader, BM25Retriever
+from haystack.pipelines import ExtractiveQAPipeline
+from haystack.document_stores import InMemoryDocumentStore
 
-# Model location
-MODEL_PATH = (".data", "lid.176.bin")
+# Step 1: Set up the Document Store
+document_store = InMemoryDocumentStore()
 
-# URL for downloading FastText language detection model
-MODEL_URL = "https://dl.fbaipublicfiles.com/fasttext/supervised-models/lid.176.bin"
+# Step 2: Add some documents (in Persian and English)
+docs = [
+    Document(content="Hello, this is a document written in English."),
+    Document(content="سلام، این یک سند است که به زبان فارسی نوشته شده است."),
+    Document(content="The capital of Iran is Tehran."),
+    Document(content="پایتخت ایران تهران است.")
+]
 
+# Write documents to the Document Store
+document_store.write_documents(docs)
 
-class LanguageIdentification():
-    def __init__(self):
-        self.model = None
+# Step 3: Initialize the Retriever (BM25)
+retriever = BM25Retriever(document_store=document_store)
 
-    def load_model(self):
-        path = '/'.join(MODEL_PATH)
-        try:
-            if not os.path.exists(path):
-                if not os.path.exists(MODEL_PATH[0]):
-                    os.makedirs(MODEL_PATH[0])
+# Step 4: Initialize the Reader using Hugging Face (Multilingual BERT for example)
+# Note: We use a multilingual model that supports both Persian and English.
+reader = FARMReader(
+    model_name_or_path="bert-base-multilingual-cased", use_gpu=False)
 
-                print(f"Downloading model to {MODEL_PATH[0]}...")
+# Step 5: Create the QA Pipeline
+qa_pipeline = ExtractiveQAPipeline(reader=reader, retriever=retriever)
 
-                response = requests.get(MODEL_URL, stream=True)
-                total_size_in_bytes = int(
-                    response.headers.get('content-length', 0))
-                block_size = 1024  # 1 Kilobyte
+# Step 6: Ask Questions
+questions = [
+    "What is the capital of Iran?",    # English
+    "پایتخت ایران چیست؟"               # Persian
+]
 
-                progress_bar = tqdm(total=total_size_in_bytes,
-                                    unit='iB', unit_scale=True)
-
-                with open(path, 'wb') as f:
-                    for data in response.iter_content(block_size):
-                        progress_bar.update(len(data))
-                        f.write(data)
-
-                progress_bar.close()
-
-                if total_size_in_bytes != 0 and progress_bar.n != total_size_in_bytes:
-                    print("Error: Download failed or incomplete.")
-                    raise Exception(f"Download failed")
-                else:
-                    print("Model downloaded successfully.")
-            self.model = fasttext.load_model(path)
-        except BaseException as e:
-            if os.path.exists(path):
-                os.remove(path)
-            raise e
-        return self
-
-    def detect(self, text: str):
-        if self.model is None:
-            raise Exception(f"Model not loaded")
-
-        prediction = self.model.predict(text)
-        # Extract language code
-        code = prediction[0][0].replace("__label__", "")
-        # Extract confidence percentage
-        confidence: float = round(prediction[1][0] * 100, 2)
-        return {"language": code, "confidence": confidence}
-
-
-if __name__ == "__main__":
-    language_identification = LanguageIdentification()
-    language_identification.load_model()
-    print(language_identification.detect("Hello, world!"))
+for question in questions:
+    prediction = qa_pipeline.run(query=question, params={"Retriever": {
+                                 "top_k": 5}, "Reader": {"top_k": 3}})
+    print(f"Question: {question}")
+    for answer in prediction["answers"]:
+        print(f"Answer: {answer.answer} (Score: {answer.score})")
