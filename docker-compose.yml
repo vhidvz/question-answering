@@ -1,0 +1,14 @@
+services:
+  language-indentification:
+    build:
+      context: .
+    ports:
+      - 8000:8000
+    environment:
+      WORKERS: 4
+    networks:
+      - localnet
+
+networks:
+  localnet:
+    driver: bridge
