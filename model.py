@@ -21,10 +21,14 @@ document_store.write_documents(docs)
 # Step 3: Initialize the Retriever (BM25)
 retriever = BM25Retriever(document_store=document_store)
 
+# xlm-roberta-large
+# facebook/m2m100_418M
+# google/mt5-base or google/mt5-large
+
 # Step 4: Initialize the Reader using Hugging Face (Multilingual BERT for example)
 # Note: We use a multilingual model that supports both Persian and English.
 reader = FARMReader(
-    model_name_or_path="xlm-roberta-base", model_kwargs={'cache_dir': '.data'}, use_gpu=False)
+    model_name_or_path="xlm-roberta-large", model_kwargs={'cache_dir': '.data'}, use_gpu=False)
 
 # Step 5: Create the QA Pipeline
 qa_pipeline = ExtractiveQAPipeline(reader=reader, retriever=retriever)
