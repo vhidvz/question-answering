@@ -5,7 +5,7 @@ from haystack.pipelines import ExtractiveQAPipeline
 from haystack.document_stores import InMemoryDocumentStore
 
 # Step 1: Set up the Document Store
-document_store = InMemoryDocumentStore()
+document_store = InMemoryDocumentStore(use_bm25=True)
 
 # Step 2: Add some documents (in Persian and English)
 docs = [
@@ -24,7 +24,7 @@ retriever = BM25Retriever(document_store=document_store)
 # Step 4: Initialize the Reader using Hugging Face (Multilingual BERT for example)
 # Note: We use a multilingual model that supports both Persian and English.
 reader = FARMReader(
-    model_name_or_path="bert-base-multilingual-cased", use_gpu=False)
+    model_name_or_path="bert-base-multilingual-cased", model_kwargs={'cache_dir': '.data'}, use_gpu=False)
 
 # Step 5: Create the QA Pipeline
 qa_pipeline = ExtractiveQAPipeline(reader=reader, retriever=retriever)
