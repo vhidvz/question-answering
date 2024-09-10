@@ -24,7 +24,7 @@ retriever = BM25Retriever(document_store=document_store)
 # Step 4: Initialize the Reader using Hugging Face (Multilingual BERT for example)
 # Note: We use a multilingual model that supports both Persian and English.
 reader = FARMReader(
-    model_name_or_path="bert-base-multilingual-cased", model_kwargs={'cache_dir': '.data'}, use_gpu=False)
+    model_name_or_path="xlm-roberta-base", model_kwargs={'cache_dir': '.data'}, use_gpu=False)
 
 # Step 5: Create the QA Pipeline
 qa_pipeline = ExtractiveQAPipeline(reader=reader, retriever=retriever)
