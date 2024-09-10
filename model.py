@@ -1,11 +1,11 @@
 from haystack.schema import Document
 
-from haystack.nodes import FARMReader, EmbeddingRetriever
 from haystack.pipelines import ExtractiveQAPipeline
 from haystack.document_stores import InMemoryDocumentStore
+from haystack.nodes import FARMReader, TfidfRetriever, EmbeddingRetriever
 
 # Step 1: Set up the Document Store
-document_store = InMemoryDocumentStore()
+document_store = InMemoryDocumentStore(use_bm25=True)
 
 # Step 2: Add some documents (in Persian and English)
 docs = [
@@ -19,9 +19,12 @@ docs = [
 document_store.write_documents(docs)
 
 # sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
-# Step 3: Initialize the Retriever (BM25)
-retriever = EmbeddingRetriever(
-    'sentence-transformers/paraphrase-multilingual-mpnet-base-v2', document_store=document_store)
+# Step 3: Initialize the EmbeddingRetriever
+# retriever = EmbeddingRetriever(
+#     'sentence-transformers/paraphrase-multilingual-mpnet-base-v2', document_store=document_store)
+# document_store.update_embeddings(retriever)
+
+retriever = TfidfRetriever(document_store=document_store)
 
 # Step 4: Initialize the Reader using Hugging Face (Multilingual BERT for example)
 # Note: We use a multilingual model that supports both Persian and English.
@@ -38,6 +41,8 @@ questions = [
 ]
 
 for question in questions:
+    final = None
+
     prediction = qa_pipeline.run(
         query=question,
         params={
@@ -48,7 +53,6 @@ for question in questions:
         })
     print(f"Question: {question}")
 
-    final = None
     for answer in prediction["answers"]:
         if final is None or answer.score > final.score:
             final = answer
