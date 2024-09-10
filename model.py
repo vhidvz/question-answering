@@ -2,7 +2,7 @@ from haystack.schema import Document
 
 from haystack.pipelines import ExtractiveQAPipeline
 from haystack.document_stores import InMemoryDocumentStore
-from haystack.nodes import FARMReader, TfidfRetriever, EmbeddingRetriever
+from haystack.nodes import FARMReader, TransformersReader, BM25Retriever, EmbeddingRetriever
 
 # Step 1: Set up the Document Store
 document_store = InMemoryDocumentStore(use_bm25=True)
@@ -24,12 +24,14 @@ document_store.write_documents(docs)
 #     'sentence-transformers/paraphrase-multilingual-mpnet-base-v2', document_store=document_store)
 # document_store.update_embeddings(retriever)
 
-retriever = TfidfRetriever(document_store=document_store)
+retriever = BM25Retriever(document_store=document_store)
 
 # Step 4: Initialize the Reader using Hugging Face (Multilingual BERT for example)
 # Note: We use a multilingual model that supports both Persian and English.
-reader = FARMReader(top_k_per_candidate=5, top_k_per_sample=5,
-                    model_name_or_path="xlm-roberta-large", model_kwargs={'cache_dir': '.data'}, use_gpu=False)
+# reader = FARMReader(top_k_per_candidate=5, top_k_per_sample=5,
+#                     model_name_or_path="xlm-roberta-large", model_kwargs={'cache_dir': '.data'}, use_gpu=False)
+reader = TransformersReader(
+    model_name_or_path="xlm-roberta-large", tokenizer="xlm-roberta-large", use_gpu=False)
 
 # Step 5: Create the QA Pipeline
 qa_pipeline = ExtractiveQAPipeline(reader=reader, retriever=retriever)
