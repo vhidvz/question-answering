@@ -1,4 +1,4 @@
 uvicorn>=0.30.5
 fastapi>=0.114.0
 python-dotenv>=1.0.1
-farm_haystack[all]>=1.26.3
+farm-haystack[inference]>=1.26.3
