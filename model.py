@@ -18,6 +18,7 @@ docs = [
 # Write documents to the Document Store
 document_store.write_documents(docs)
 
+# sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 # Step 3: Initialize the Retriever (BM25)
 retriever = EmbeddingRetriever(
     'sentence-transformers/paraphrase-multilingual-mpnet-base-v2', document_store=document_store)
