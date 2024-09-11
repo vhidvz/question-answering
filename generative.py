@@ -25,7 +25,7 @@ document_store.write_documents(docs)
 # Initialize the Retriever
 retriever = BM25Retriever(document_store=document_store)
 
-prompt_node = PromptNode(model_name_or_path="google/mt5-base",
+prompt_node = PromptNode(model_name_or_path="google/flan-t5-base",
                          use_gpu=False,  default_prompt_template='deepset/question-answering')
 
 # Initialize the Generator
