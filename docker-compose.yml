@@ -1,13 +1,22 @@
 services:
-  language-indentification:
+  question-answering:
     build:
       context: .
     ports:
       - 8000:8000
     environment:
       WORKERS: 4
+      ELASTICSEARCH_HOST: http://elasticsearch:9200/
+      ELASTICSEARCH_INDEX: qa_index
+    volumes:
+      - .data/:/root/.cache/huggingface/hub
     networks:
       - localnet
+
+  elasticsearch:
+    extends:
+      file: ./docker/docker-compose.yml
+      service: elasticsearch
 
 networks:
   localnet:
