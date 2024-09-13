@@ -123,7 +123,7 @@ class QuestionAnswering():
         documents = [Document(content=content) for content in contents]
         self.indexing_pipeline.run({"documents": documents})
 
-    def answer(self, query: str, lang: str = "fa"):
+    def answer(self, query: str, lang: str = "fa") -> str | None:
         if self.generator is None or self.store is None:
             raise ValueError("Model not loaded")
 
