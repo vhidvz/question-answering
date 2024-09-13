@@ -26,6 +26,9 @@ EMBEDDING_MODEL = 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2'
 ELASTICSEARCH_HOST = os.getenv("ELASTICSEARCH_HOST", None)
 ELASTICSEARCH_INDEX = os.getenv("ELASTICSEARCH_INDEX", 'qa_index')
 
+# Language supported by the model
+SUPPORTED_LANGUAGES = ['en', 'fa']
+
 # Prompt templates
 PROMPT_TEMPLATE_FA = """
 بر مبنای اطلاعات ارائه شده در ادامه به سوال پاسخ بده.
@@ -123,6 +126,12 @@ class QuestionAnswering():
         self.indexing_pipeline.run({"documents": documents})
 
     def answer(self, query: str, lang: str = "fa"):
+        if self.generator is None or self.store is None:
+            raise ValueError("Model not loaded")
+
+        if lang not in SUPPORTED_LANGUAGES:
+            raise ValueError("Unsupported language")
+
         prompt = PromptBuilder(template=PROMPT_TEMPLATE_FA) if lang == "fa" else PromptBuilder(
             template=PROMPT_TEMPLATE_EN)
         separator = PROMPT_SEPARATOR_FA if lang == "fa" else PROMPT_SEPARATOR_EN
