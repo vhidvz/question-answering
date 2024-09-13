@@ -18,9 +18,6 @@ from haystack_integrations.components.retrievers.elasticsearch import Elasticsea
 dotenv.load_dotenv()
 
 
-# Model location
-MODEL_PATH = ".data"
-
 # Language models
 GENERATOR_MODEL = "m3hrdadfi/gpt2-persian-qa"
 EMBEDDING_MODEL = 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2'
