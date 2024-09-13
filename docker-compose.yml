@@ -9,7 +9,7 @@ services:
       ELASTICSEARCH_HOST: http://elasticsearch:9200/
       ELASTICSEARCH_INDEX: qa_index
     volumes:
-      - .data/:/root/.cache/huggingface/hub/
+      - .data/:/root/.cache/huggingface/hub/:ro
     networks:
       - localnet
 
