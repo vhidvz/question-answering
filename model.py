@@ -41,7 +41,6 @@ PROMPT_TEMPLATE_FA = """
 سوال: {{query}}
 پاسخ:
 """
-PROMPT_SEPARATOR_FA = "پاسخ:"
 
 PROMPT_TEMPLATE_EN = """
 Given the context please answer the question.
@@ -54,7 +53,6 @@ Context:
 Question: {{query}}
 Answer:
 """
-PROMPT_SEPARATOR_EN = "Answer:"
 
 
 class QuestionAnswering():
@@ -134,7 +132,6 @@ class QuestionAnswering():
 
         prompt = PromptBuilder(template=PROMPT_TEMPLATE_FA) if lang == "fa" else PromptBuilder(
             template=PROMPT_TEMPLATE_EN)
-        separator = PROMPT_SEPARATOR_FA if lang == "fa" else PROMPT_SEPARATOR_EN
 
         basic_rag_pipeline = Pipeline()
         basic_rag_pipeline.add_component("embedder", self.embedder['text'])
@@ -159,10 +156,8 @@ class QuestionAnswering():
                 "bm25_retriever": {"query": query, "top_k": 3},
                 "joiner": {"top_k": 5},
                 "prompt": {"query": query}
-            })["llm"]["replies"][0]
-        answer = response.split(separator) if response else []
-        result = answer.pop() if answer and len(answer) else None
-        return result.strip() if isinstance(result, str) else None
+            })
+        return response["llm"]["replies"][0]
 
 
 if __name__ == "__main__":
