@@ -1,10 +1,15 @@
 {
   "cSpell.words": [
     "dotenv",
+    "embedder",
+    "embedders",
     "fastapi",
     "fasttext",
+    "hrdadfi",
     "mbart",
+    "mpnet",
     "pdoc",
+    "preprocessors",
     "pydantic",
     "tqdm",
     "uvicorn",
