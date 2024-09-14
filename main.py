@@ -42,19 +42,23 @@ def detect(payload: RequestModel):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class DocumentsModel(BaseModel):
+class ReqDocumentsModel(BaseModel):
     contents: list[str]
 
 
-@app.post("/documents")
-def detect(payload: DocumentsModel):
+class ResDocumentsModel(BaseModel):
+    total: int
+
+
+@app.post("/documents", response_model=ResDocumentsModel)
+def detect(payload: ReqDocumentsModel):
     # Ensure text is provided
     if not len(payload.contents):
         raise HTTPException(status_code=400, detail="Text input is required.")
 
     # Add a new document
     try:
-        return model.add_documents(payload.contents)
+        return ResDocumentsModel(total=model.add_documents(payload.contents))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

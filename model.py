@@ -121,7 +121,8 @@ class QuestionAnswering():
 
     def add_documents(self, contents: list[str]):
         documents = [Document(content=content) for content in contents]
-        self.indexing_pipeline.run({"documents": documents})
+        result = self.indexing_pipeline.run({"documents": documents})
+        return result['writer']['documents_written']
 
     def answer(self, query: str, lang: str = "fa") -> str | None:
         if self.generator is None or self.store is None:
