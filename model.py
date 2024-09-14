@@ -156,8 +156,9 @@ class QuestionAnswering():
                 "bm25_retriever": {"query": query, "top_k": 3},
                 "joiner": {"top_k": 5},
                 "prompt": {"query": query}
-            })
-        return response["llm"]["replies"][0]
+            })["llm"]["replies"]
+        answer = response[0] if len(response) else None
+        return answer.strip() if type(answer) == str else None
 
 
 if __name__ == "__main__":
