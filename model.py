@@ -26,11 +26,8 @@ EMBEDDING_MODEL = 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2'
 ELASTICSEARCH_HOST = os.getenv("ELASTICSEARCH_HOST", None)
 ELASTICSEARCH_INDEX = os.getenv("ELASTICSEARCH_INDEX", 'qa_index')
 
-# Language supported by the model
-SUPPORTED_LANGUAGES = ['en', 'fa']
-
 # Prompt templates
-PROMPT_TEMPLATE_FA = """
+PROMPT_TEMPLATE = """
 بر مبنای اطلاعات ارائه شده در ادامه به سوال پاسخ بده.
 
 اطلاعات:
@@ -40,18 +37,6 @@ PROMPT_TEMPLATE_FA = """
 
 سوال: {{query}}
 پاسخ:
-"""
-
-PROMPT_TEMPLATE_EN = """
-Given the context please answer the question.
-
-Context:
-{% for document in documents %}
-    {{ document.content }}
-{% endfor %}
-
-Question: {{query}}
-Answer:
 """
 
 
@@ -64,6 +49,7 @@ class QuestionAnswering():
         self.splitter = None
         self.embedder = {"doc": None, "text": None}
 
+        self.prompt = None
         self.generator = None
 
         # Retrievers
@@ -72,6 +58,7 @@ class QuestionAnswering():
 
         # Indexing pipeline
         self.indexing_pipeline = None
+        self.basic_rag_pipeline = None
 
     def load_model(self):
         self.splitter = DocumentSplitter(
@@ -103,6 +90,8 @@ class QuestionAnswering():
         self.writer = DocumentWriter(self.store)
         self.joiner = DocumentJoiner(join_mode='merge')
 
+        self.prompt = PromptBuilder(template=PROMPT_TEMPLATE)
+
         self.generator = HuggingFaceLocalGenerator(
             model=GENERATOR_MODEL,
             task="text-generation",
@@ -117,6 +106,25 @@ class QuestionAnswering():
         self.indexing_pipeline.connect("embedder", "writer")
         self.indexing_pipeline.connect("splitter", "embedder")
 
+        # Basic rag pipeline
+        self.basic_rag_pipeline = Pipeline()
+        self.basic_rag_pipeline.add_component(
+            "embedder", self.embedder['text'])
+        self.basic_rag_pipeline.add_component(
+            "embedding_retriever", self.embedding_retriever)
+        self.basic_rag_pipeline.add_component(
+            "bm25_retriever", self.bm25_retriever)
+        self.basic_rag_pipeline.add_component("joiner", self.joiner)
+        self.basic_rag_pipeline.add_component("prompt", self.prompt)
+        self.basic_rag_pipeline.add_component("llm", self.generator)
+
+        self.basic_rag_pipeline.connect(
+            "embedder", "embedding_retriever.query_embedding")
+        self.basic_rag_pipeline.connect("embedding_retriever", "joiner")
+        self.basic_rag_pipeline.connect("bm25_retriever", "joiner")
+        self.basic_rag_pipeline.connect("joiner", "prompt.documents")
+        self.basic_rag_pipeline.connect("prompt", "llm")
+
         return self
 
     def add_documents(self, contents: list[str]):
@@ -124,33 +132,11 @@ class QuestionAnswering():
         result = self.indexing_pipeline.run({"documents": documents})
         return result['writer']['documents_written']
 
-    def answer(self, query: str, lang: str = "fa") -> str | None:
-        if self.generator is None or self.store is None:
+    def answer(self, query: str) -> str | None:
+        if self.basic_rag_pipeline is None:
             raise ValueError("Model not loaded")
 
-        if lang not in SUPPORTED_LANGUAGES:
-            raise ValueError("Unsupported language")
-
-        prompt = PromptBuilder(template=PROMPT_TEMPLATE_FA) if lang == "fa" else PromptBuilder(
-            template=PROMPT_TEMPLATE_EN)
-
-        basic_rag_pipeline = Pipeline()
-        basic_rag_pipeline.add_component("embedder", self.embedder['text'])
-        basic_rag_pipeline.add_component(
-            "embedding_retriever", self.embedding_retriever)
-        basic_rag_pipeline.add_component("bm25_retriever", self.bm25_retriever)
-        basic_rag_pipeline.add_component("joiner", self.joiner)
-        basic_rag_pipeline.add_component("prompt", prompt)
-        basic_rag_pipeline.add_component("llm", self.generator)
-
-        basic_rag_pipeline.connect(
-            "embedder", "embedding_retriever.query_embedding")
-        basic_rag_pipeline.connect("embedding_retriever", "joiner")
-        basic_rag_pipeline.connect("bm25_retriever", "joiner")
-        basic_rag_pipeline.connect("joiner", "prompt.documents")
-        basic_rag_pipeline.connect("prompt", "llm")
-
-        response = basic_rag_pipeline.run(
+        response = self.basic_rag_pipeline.run(
             {
                 "embedder": {"text": query},
                 "embedding_retriever": {"top_k": 3},
@@ -173,4 +159,4 @@ if __name__ == "__main__":
     model = QuestionAnswering().load_model()
     model.add_documents(docs)
 
-    print(model.answer("مردم ایران به چه زبانی صحبت می‌کنند؟", "fa"))
+    print(model.answer("مردم ایران به چه زبانی صحبت می‌کنند؟"))

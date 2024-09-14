@@ -21,7 +21,6 @@ model = QuestionAnswering().load_model()
 
 
 class RequestModel(BaseModel):
-    lang: str
     query: str
 
 
@@ -32,12 +31,12 @@ class ResponseModel(BaseModel):
 @app.post("/answer", response_model=ResponseModel)
 def detect(payload: RequestModel):
     # Ensure text is provided
-    if not payload.query or not payload.lang:
+    if not payload.query:
         raise HTTPException(status_code=400, detail="Text input is required.")
 
     # Answer the question
     try:
-        return model.answer(payload.query, payload.lang)
+        return model.answer(payload.query)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
