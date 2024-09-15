@@ -9,7 +9,7 @@
 
 services:
   elasticsearch:
-    image: artifact.efarda.ir/docker/elasticsearch:8.15.1
+    image: elasticsearch:8.15.1
     container_name: elasticsearch
     ports:
       - 9200:9200
@@ -22,7 +22,7 @@ services:
       - localnet
 
   kibana:
-    image: artifact.efarda.ir/docker/kibana:8.15.1
+    image: bitnami/kibana:8.15.1
     container_name: kibana
     ports:
       - 5601:5601
