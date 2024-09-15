@@ -9,15 +9,12 @@
 
 services:
   elasticsearch:
-    image: elasticsearch:8.15.1
+    image: bitnami/elasticsearch:8.15.1
     container_name: elasticsearch
     ports:
       - 9200:9200
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
     volumes:
-      - ../.data/elastic:/usr/share/elasticsearch/data
+      - ../.data/elastic:/bitnami/elasticsearch/data
     networks:
       - localnet
 
