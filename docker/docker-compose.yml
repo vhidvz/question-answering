@@ -17,7 +17,7 @@ services:
       - discovery.type=single-node
       - xpack.security.enabled=false
     volumes:
-      - .data/elastic:/usr/share/elasticsearch/data
+      - ../.data/elastic:/usr/share/elasticsearch/data
     networks:
       - localnet
 
