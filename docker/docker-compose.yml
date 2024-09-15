@@ -9,18 +9,20 @@
 
 services:
   elasticsearch:
-    image: elasticsearch:8.15.1
+    image: artifact.efarda.ir/docker/elasticsearch:8.15.1
     container_name: elasticsearch
     ports:
       - 9200:9200
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=false
+    volumes:
+      - .data/elastic:/usr/share/elasticsearch/data
     networks:
       - localnet
 
   kibana:
-    image: bitnami/kibana:8.15.1
+    image: artifact.efarda.ir/docker/kibana:8.15.1
     container_name: kibana
     ports:
       - 5601:5601
