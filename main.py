@@ -14,7 +14,7 @@ dotenv.load_dotenv()
 app = FastAPI(
     title="Question Answering",
     description="https://huggingface.co/m3hrdadfi/gpt2-persian-qa",
-    version="1.0.3"
+    version="1.0.4"
 )
 
 model = QuestionAnswering().load_model()

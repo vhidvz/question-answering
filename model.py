@@ -76,9 +76,10 @@ class QuestionAnswering():
                 hosts=ELASTICSEARCH_HOST, index=ELASTICSEARCH_INDEX)
 
             # Retrievers
-            self.bm25_retriever = ElasticsearchBM25Retriever(self.store)
+            self.bm25_retriever = ElasticsearchBM25Retriever(
+                document_store=self.store)
             self.embedding_retriever = ElasticsearchEmbeddingRetriever(
-                self.store)
+                document_store=self.store)
 
         else:
             self.store = InMemoryDocumentStore()
