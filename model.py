@@ -133,7 +133,7 @@ class QuestionAnswering():
         result = self.indexing_pipeline.run({"documents": documents})
         return result['writer']['documents_written']
 
-    def answer(self, query: str) -> str | None:
+    def answer(self, query: str) -> str:
         if self.basic_rag_pipeline is None:
             raise ValueError("Model not loaded")
 
@@ -146,7 +146,7 @@ class QuestionAnswering():
                 "prompt": {"query": query}
             })["llm"]["replies"]
         answer = response[0] if len(response) else None
-        return answer.strip() if type(answer) == str else None
+        return answer.strip() if type(answer) == str else ''
 
 
 if __name__ == "__main__":

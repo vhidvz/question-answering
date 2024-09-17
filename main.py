@@ -14,7 +14,7 @@ dotenv.load_dotenv()
 app = FastAPI(
     title="Question Answering",
     description="https://huggingface.co/m3hrdadfi/gpt2-persian-qa",
-    version="1.0.4"
+    version="1.0.5"
 )
 
 model = QuestionAnswering().load_model()
@@ -36,7 +36,7 @@ def detect(payload: RequestModel):
 
     # Answer the question
     try:
-        return model.answer(payload.query)
+        return ResponseModel(answer=model.answer(payload.query))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
