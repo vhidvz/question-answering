@@ -7,12 +7,18 @@ git clone git@github.com:vhidvz/question-answering.git
 cd question-answering && docker-compose up -d
 ```
 
-> Note: To enable in-memory document storage, simply remove the `ELASTICSEARCH_*` environment variables.
+**Docker Hub:**
+
+```sh
+docker run -p 8000:8000 vhidvz/question-answering:latest
+```
 
 Endpoints are fully documented using OpenAPI Specification 3 (OAS3) at:
 
 - ReDoc: <http://localhost:8000/redoc>
 - Swagger: <http://localhost:8000/docs>
+
+> Note: To enable in-memory document storage, simply remove the `ELASTICSEARCH_*` environment variables.
 
 ## Documentation
 
