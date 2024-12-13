@@ -9,7 +9,7 @@
 
 services:
   elasticsearch:
-    image: bitnami/elasticsearch:8.15.1
+    image: bitnami/elasticsearch:8.17.0
     container_name: elasticsearch
     ports:
       - 9200:9200
