@@ -19,7 +19,7 @@ services:
       - localnet
 
   kibana:
-    image: bitnami/kibana:8.15.1
+    image: bitnami/kibana:8.17.0
     container_name: kibana
     ports:
       - 5601:5601
